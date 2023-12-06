@@ -1,0 +1,95 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+const filePath = "../../../data/dec1/input.txt"
+
+// String to integer mapping
+var strToIntMap = map[string]int{
+	"one":   1,
+	"two":   2,
+	"three": 3,
+	"four":  4,
+	"five":  5,
+	"six":   6,
+	"seven": 7,
+	"eight": 8,
+	"nine":  9,
+}
+
+// ConvertStringToInt converts a numeric string to an integer.
+func ConvertStringToInt(s string) (int, bool) {
+	value, found := strToIntMap[strings.ToLower(s)]
+	if !found {
+		value, err := strconv.Atoi(s)
+		if err == nil {
+			return value, true
+		}
+	}
+	return value, found
+}
+
+func firstLastDigit(s string) (number int, found bool) {
+	pattern := `(1|2|3|4|5|6|7|8|9|one|two|three|four|five|six|seven|eight|nine)`
+	re := regexp.MustCompile(pattern)
+	matches := re.FindAllStringIndex(s, -1)
+	// fmt.Println(matches)
+	if len(matches) > 0 {
+		firstDigit, foundFirst := ConvertStringToInt(s[matches[0][0]:matches[0][1]])
+		lastDigit, foundSecond := ConvertStringToInt(s[matches[len(matches)-1][0]:matches[len(matches)-1][1]])
+
+		if foundFirst && foundSecond {
+			stringNumber := fmt.Sprintf("%d%d", firstDigit, lastDigit)
+			tmpNum, err := strconv.Atoi(stringNumber)
+			if err != nil {
+				panic(err)
+			}
+			return tmpNum, true
+		}
+
+	}
+	return 0, false
+}
+
+func main() {
+
+	// Open file
+	file, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// Create scanner object to read file
+	scanner := bufio.NewScanner(file)
+
+	total := 0
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		number, found := firstLastDigit(line)
+
+		if found {
+			fmt.Println(line, number)
+			total += number
+		} else {
+
+			fmt.Printf("%s not found\n", line)
+		}
+	}
+
+	// Check for errors during Scan.
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(total)
+
+}
