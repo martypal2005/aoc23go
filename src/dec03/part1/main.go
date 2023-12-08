@@ -8,7 +8,7 @@ import (
 	"unicode"
 )
 
-const filePath = "../../../data/dec3/testinput.txt"
+const filePath = "../../../data/dec3/input.txt"
 
 type numIndex struct {
 	number int
@@ -20,7 +20,7 @@ type numIndex struct {
 func isSymbol(s string, index int) bool {
 	r := []rune(s)
 	if index < 0 || index == len(r) {
-		return false // or handle error
+		return false
 	}
 	return !unicode.IsDigit(r[index]) && r[index] != '.'
 }
@@ -42,6 +42,13 @@ func getNumbers(s string) <-chan numIndex {
 				}
 				numStr += string(r)
 				count++
+				if i == len(s)-1 {
+					num, err := strconv.Atoi(numStr)
+					if err != nil {
+						panic(err)
+					}
+					channel <- numIndex{num, index - 1, index + count}
+				}
 			} else {
 				if numStr == "" {
 					continue
@@ -95,39 +102,36 @@ func main() {
 				total += ni.number
 				continue
 			}
-			/*
 
-				// Check all indexes in line above
-				if i > 0 {
-					isPart := false
-					for j := ni.start; j < ni.end; j++ {
-						if isSymbol(lines[i-1], i) {
-							total += ni.number
-							isPart = true
-							break
-						}
-					}
-					if isPart {
-						continue
+			// Check all indexes in line above
+			if i > 0 {
+				isPart := false
+				for j := ni.start; j <= ni.end; j++ {
+					if isSymbol(lines[i-1], j) {
+						total += ni.number
+						isPart = true
+						break
 					}
 				}
+				if isPart {
+					continue
+				}
+			}
 
-					// Check all indexes in line below
-					if i < len(lines) {
-						isPart := false
-						for j := ni.start; j < ni.end; j++ {
-							if isSymbol(lines[i+1], i) {
-								total += ni.number
-								isPart = true
-								break
-							}
-						}
-						if isPart {
-							continue
-						}
+			// Check all indexes in line below
+			if i < len(lines)-1 {
+				isPart := false
+				for j := ni.start; j <= ni.end; j++ {
+					if isSymbol(lines[i+1], j) {
+						total += ni.number
+						isPart = true
+						break
 					}
-			*/
-
+				}
+				if isPart {
+					continue
+				}
+			}
 		}
 	}
 
